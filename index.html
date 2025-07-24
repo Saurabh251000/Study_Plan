@@ -340,8 +340,8 @@
             list.className = 'grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-gray-700';
             topics.forEach(topic => {
                 const item = document.createElement('li');
-                item.className = 'flex items-center topic-item'; // Added topic-item class
-                item.innerHTML = `<span class="text-indigo-500 mr-2">&#10003;</span> <span>${topic}</span>`; // Wrapped topic text in a span
+                item.className = 'flex items-center topic-item';
+                item.innerHTML = `<span class="text-indigo-500 mr-2">&#10003;</span> <span>${topic}</span>`;
                 list.appendChild(item);
             });
             tier1ContentContainer.appendChild(list);
@@ -355,7 +355,6 @@
             }
         });
 
-        // Click handler for Tier I syllabus topics
         tier1ContentContainer.addEventListener('click', (e) => {
             const listItem = e.target.closest('.topic-item');
             if (listItem) {
@@ -369,7 +368,6 @@
         const timelineContentContainer = document.getElementById('timeline-content');
         const phases = Object.keys(studyTimeline);
 
-        // Clear existing timeline navigation before re-rendering
         timelineNavContainer.innerHTML = ''; 
 
         phases.forEach((phase, index) => {
@@ -414,7 +412,6 @@
             }
         });
 
-        // Click handler for Timeline topics
         timelineContentContainer.addEventListener('click', (e) => {
             const listItem = e.target.closest('.topic-item');
             if (listItem) {
@@ -444,39 +441,49 @@
             window.location.hash = e.target.value;
         });
 
-        // Previous Year Papers functionality
         const pdfUploadInput = document.getElementById('pdf-upload');
         const uploadedPdfsList = document.getElementById('uploaded-pdfs-list');
-        let uploadedFiles = []; // To store file objects
+        
+        // Simulate pre-existing files by creating Blob objects for them
+        const initialPapers = [
+            { name: 'IB_ACIO_2023_Paper.pdf', data: new Blob(['This is a simulated content for IB_ACIO_2023_Paper.pdf'], { type: 'application/pdf' }) },
+            { name: 'IB_ACIO_2022_Paper.pdf', data: new Blob(['This is a simulated content for IB_ACIO_2022_Paper.pdf'], { type: 'application/pdf' }) },
+            { name: 'IB_ACIO_2021_Paper.pdf', data: new Blob(['This is a simulated content for IB_ACIO_2021_Paper.pdf'], { type: 'application/pdf' }) }
+        ];
+        let uploadedFiles = [...initialPapers]; // Start with pre-existing papers
+
+        function renderUploadedPdfs() {
+            uploadedPdfsList.innerHTML = ''; // Clear existing list
+            if (uploadedFiles.length === 0) {
+                uploadedPdfsList.innerHTML = '<li class="text-gray-500">No papers uploaded yet.</li>';
+                return;
+            }
+            uploadedFiles.forEach((fileObj, index) => {
+                const listItem = document.createElement('li');
+                listItem.className = 'flex items-center justify-between bg-gray-100 p-3 rounded-md border border-gray-200';
+                listItem.innerHTML = `
+                    <span class="text-gray-700 font-medium truncate mr-4">${fileObj.name}</span>
+                    <button data-index="${index}" class="view-pdf-button px-3 py-1 bg-indigo-500 text-white rounded-md text-sm hover:bg-indigo-600 transition-colors">View</button>
+                `;
+                uploadedPdfsList.appendChild(listItem);
+            });
+        }
 
         pdfUploadInput.addEventListener('change', (event) => {
             const files = event.target.files;
             if (files.length > 0) {
-                // Clear initial message if present
-                if (uploadedPdfsList.querySelector('li.text-gray-500')) {
-                    uploadedPdfsList.innerHTML = '';
-                }
-
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
                     if (file.type === 'application/pdf') {
-                        uploadedFiles.push(file); // Store the file object
-                        const listItem = document.createElement('li');
-                        listItem.className = 'flex items-center justify-between bg-gray-100 p-3 rounded-md border border-gray-200';
-                        listItem.innerHTML = `
-                            <span class="text-gray-700 font-medium truncate mr-4">${file.name}</span>
-                            <button data-index="${uploadedFiles.length - 1}" class="view-pdf-button px-3 py-1 bg-indigo-500 text-white rounded-md text-sm hover:bg-indigo-600 transition-colors">View</button>
-                        `;
-                        uploadedPdfsList.appendChild(listItem);
+                        uploadedFiles.push({ name: file.name, data: file }); // Store the actual File object
                     } else {
-                        // Optionally, show an error for non-PDF files
                         const errorItem = document.createElement('li');
                         errorItem.className = 'text-red-500 text-sm';
                         errorItem.textContent = `Error: "${file.name}" is not a PDF file and was not uploaded.`;
                         uploadedPdfsList.appendChild(errorItem);
                     }
                 }
-                // Clear the input after processing files to allow re-uploading the same file
+                renderUploadedPdfs(); // Re-render the list with new uploads
                 pdfUploadInput.value = ''; 
             }
         });
@@ -485,12 +492,15 @@
             if (e.target.classList.contains('view-pdf-button')) {
                 const index = parseInt(e.target.dataset.index);
                 if (index >= 0 && index < uploadedFiles.length) {
-                    const fileToView = uploadedFiles[index];
+                    const fileToView = uploadedFiles[index].data; // Access the 'data' property
                     const fileURL = URL.createObjectURL(fileToView);
                     window.open(fileURL, '_blank');
                 }
             }
         });
+
+        // Initial render of pre-existing PDFs when the page loads
+        renderUploadedPdfs();
 
     });
     </script>
