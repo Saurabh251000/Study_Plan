@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive IB ACIO 2025 Study Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A single-page dashboard design with a sticky top navigation for seamless scrolling. The structure is thematic: 1. Overview (using cards and a chart for a quick summary), 2. Tier I Deep Dive (using interactive tabs to organize the dense syllabus), 3. Tier II Strategy (using cards for clarity), 4. Previous Year Papers (for file uploads and viewing), and 5. Interactive Timeline (a visual, clickable guide for the study plan). This structure was chosen to break down the complex information into manageable, interactive sections, making it less overwhelming and more engaging for an aspirant than a linear document. The user can get a high-level view first, then drill down into specifics as needed. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Tier I Exam Pattern (Section-wise marks) -> Goal: Inform/Compare -> Viz: Donut Chart -> Interaction: Hover for details -> Justification: Provides a quick, visual breakdown of the exam's structure, which is more intuitive than a simple list. -> Library: Chart.js (Canvas).
+        - Report Info: Tier I & II Syllabus -> Goal: Organize -> Presentation: Tabbed interface for Tier I, Cards for Tier II -> Interaction: Click to switch syllabus content -> Justification: Tabs prevent a long wall of text for the dense Tier I syllabus, improving readability. Cards neatly segment the simpler Tier II structure. -> Method: HTML/CSS/JS.
+        - Report Info: Study Plan -> Goal: Organize/Change -> Viz: Interactive Timeline -> Interaction: Click on a month to see the detailed plan for that period. -> Justification: Transforms a static plan into an engaging, step-by-step guide. It helps users focus on one phase at a time, making the overall plan feel more achievable. -> Method: HTML/CSS/JS.
+        - Report Info: Previous Year Papers -> Goal: Access Resources -> Presentation: File upload interface with list of uploaded files -> Interaction: Upload file, click to view file in new tab -> Justification: Provides a direct utility for users to manage their study materials within the application context. -> Method: HTML/CSS/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 300px;
+            width: 100%;
+            max-width: 300px;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #4f46e5; /* indigo-600 */
+            border-bottom-color: #4f46e5;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+        }
+        .timeline-item.active .timeline-dot {
+            background-color: #4f46e5;
+            transform: scale(1.2);
+        }
+        .timeline-item.active .timeline-content {
+             border-color: #4f46e5;
+        }
+        .topic-item {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .topic-item.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+            color: #6b7280; /* gray-500 */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <header class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl md:text-2xl font-bold text-indigo-600">IB ACIO 2025 Plan</h1>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#overview" class="nav-link font-medium text-gray-600 pb-1">Overview</a>
+                    <a href="#tier1" class="nav-link font-medium text-gray-600 pb-1">Tier I Syllabus</a>
+                    <a href="#tier2" class="nav-link font-medium text-gray-600 pb-1">Tier II Strategy</a>
+                    <a href="#previous-papers" class="nav-link font-medium text-gray-600 pb-1">Previous Papers</a>
+                    <a href="#timeline" class="nav-link font-medium text-gray-600 pb-1">Study Timeline</a>
+                </div>
+                <div class="md:hidden">
+                    <select id="mobile-nav" class="bg-gray-200 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                        <option value="#overview">Overview</option>
+                        <option value="#tier1">Tier I Syllabus</option>
+                        <option value="#tier2">Tier II Strategy</option>
+                        <option value="#previous-papers">Previous Papers</option>
+                        <option value="#timeline">Study Timeline</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <section id="overview" class="mb-16 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Exam Structure Overview</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">The IB ACIO selection process is a multi-stage journey. This section provides a high-level summary of each tier, giving you a clear picture of the path ahead. Interact with the elements below to understand the structure and weightage of each stage.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-5 gap-8 items-center">
+                <div class="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
+                        <h3 class="font-bold text-xl text-indigo-700 mb-2">Tier I</h3>
+                        <p class="text-gray-600 font-medium">Objective Test</p>
+                        <ul class="mt-4 space-y-2 text-sm text-gray-700">
+                            <li><span class="font-semibold">Mode:</span> Online</li>
+                            <li><span class="font-semibold">Marks:</span> 100</li>
+                            <li><span class="font-semibold">Duration:</span> 60 Mins</li>
+                            <li><span class="font-semibold">Negative:</span> 1/4 Mark</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
+                        <h3 class="font-bold text-xl text-green-700 mb-2">Tier II</h3>
+                        <p class="text-gray-600 font-medium">Descriptive Test</p>
+                        <ul class="mt-4 space-y-2 text-sm text-gray-700">
+                            <li><span class="font-semibold">Mode:</span> Offline</li>
+                            <li><span class="font-semibold">Marks:</span> 50</li>
+                            <li><span class="font-semibold">Duration:</span> 60 Mins</li>
+                             <li><span class="font-semibold">Type:</span> Essay & Précis</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
+                        <h3 class="font-bold text-xl text-blue-700 mb-2">Tier III</h3>
+                        <p class="text-gray-600 font-medium">Interview</p>
+                        <ul class="mt-4 space-y-2 text-sm text-gray-700">
+                           <li><span class="font-semibold">Mode:</span> In-Person</li>
+                           <li><span class="font-semibold">Marks:</span> 100</li>
+                           <li><span class="font-semibold">Focus:</span> Personality Test</li>
+                           <li><span class="font-semibold">Type:</span> Psychometric Test</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                    <h3 class="text-center font-bold text-xl mb-4">Tier I Mark Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="tier1Chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tier1" class="mb-16 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Tier I: Detailed Syllabus</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Tier I is the first hurdle, testing a broad range of subjects. Use the tabs below to explore the specific topics covered in each section. This detailed breakdown is essential for creating a targeted study plan and ensuring you cover all required areas.</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-4 sm:p-6">
+                <div id="tier1-tabs" class="flex flex-wrap justify-center gap-2 sm:gap-4 mb-6">
+                </div>
+                <div id="tier1-content" class="min-h-[200px] p-4 bg-gray-50 rounded-lg">
+                </div>
+            </div>
+        </section>
+        
+        <section id="tier2" class="mb-16 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Tier II: Descriptive Strategy</h2>
+                 <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Tier II assesses your writing and comprehension skills. This section breaks down the components of the descriptive paper. Understanding the expectations for the essay, précis, and comprehension is key to scoring well in this stage.</p>
+            </div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                    <h3 class="font-bold text-xl text-green-700 mb-3">Essay Writing (30 Marks)</h3>
+                    <p class="text-gray-600">This tests your ability to articulate thoughts on a given topic coherently. Focus on topics related to national security, current affairs, social issues, and technology. Structure your essay with an introduction, body, and conclusion.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                    <h3 class="font-bold text-xl text-green-700 mb-3">Précis Writing (10 Marks)</h3>
+                    <p class="text-gray-600">You must summarize a given passage to about one-third of its original length. The key is to retain the core message and main points without adding your own opinions. It requires careful reading and concise writing.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 lg:col-span-1 md:col-span-2">
+                    <h3 class="font-bold text-xl text-green-700 mb-3">Comprehension (10 Marks)</h3>
+                    <p class="text-gray-600">This involves answering questions based on a given passage. It tests your ability to read, understand, and interpret written information accurately. Practice reading various texts to improve speed and understanding.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="previous-papers" class="mb-16 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Previous Year Papers</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Practice is key! Use this section to upload and keep track of previous year's question papers in PDF format. You can then view them directly in a new tab for easy access.</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+                <div class="mb-6">
+                    <label for="pdf-upload" class="block text-lg font-medium text-gray-700 mb-2">Upload PDF Paper:</label>
+                    <input type="file" id="pdf-upload" accept=".pdf" class="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-md file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-indigo-50 file:text-indigo-700
+                        hover:file:bg-indigo-100 cursor-pointer
+                    ">
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg text-gray-800 mb-3">Uploaded Papers:</h3>
+                    <ul id="uploaded-pdfs-list" class="space-y-3">
+                        <li class="text-gray-500">No papers uploaded yet.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="timeline" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Interactive Study Timeline</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">A structured plan is the key to covering the vast syllabus. This interactive timeline breaks down the preparation into manageable weekly phases. Click on each week to see the recommended focus areas and topics to master.</p>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-8">
+                <div id="timeline-nav" class="md:w-1/3 lg:w-1/4">
+                </div>
+                <div id="timeline-content" class="md:w-2/3 lg:w-3/4 bg-white p-6 rounded-xl shadow-md border border-gray-200 min-h-[300px]">
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
+            <p>&copy; 2025 Interactive Study Plan. For informational purposes only.</p>
+        </div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const tier1Syllabus = {
+            'General Awareness': ['National & International Affairs', 'Current Affairs', 'Science & Technology', 'History', 'Geography', 'Polity', 'Economics', 'Static GK', 'Books and Authors', 'Important Days'],
+            'Quantitative Aptitude': ['Number System', 'HCF & LCM', 'Percentage', 'Profit & Loss', 'Simple & Compound Interest', 'Time & Work', 'Time, Speed & Distance', 'Ratio & Proportion', 'Mixtures & Alligations', 'Data Interpretation'],
+            'Reasoning': ['Analogies', 'Classification', 'Coding-Decoding', 'Blood Relations', 'Syllogism', 'Number & Alphabet Series', 'Direction Sense', 'Venn Diagrams', 'Puzzles', 'Non-verbal Reasoning'],
+            'English': ['Reading Comprehension', 'Cloze Test', 'Para Jumbles', 'Fill in the Blanks', 'Error Spotting', 'Idioms & Phrases', 'Synonyms & Antonyms', 'One Word Substitution', 'Sentence Improvement']
+        };
+
+        const studyTimeline = {
+            'Week 1: Foundation & Current Affairs': {
+                description: 'Focus on core concepts and building a strong daily current affairs routine. Identify weak areas.',
+                topics: [
+                    '<strong>Quantitative Aptitude:</strong> Number System, Percentage, Ratio & Proportion.',
+                    '<strong>Reasoning:</strong> Coding-Decoding, Analogies, Series.',
+                    '<strong>General Awareness:</strong> Daily Current Affairs (1.5 hours), start with History (Ancient/Medieval).',
+                    '<strong>English:</strong> Vocabulary (daily 30 words), Basic Grammar Rules, Reading Comprehension practice (1 passage daily).'
+                ]
+            },
+            'Week 2: Core Subjects & Practice': {
+                description: 'Deep dive into key subjects, increase practice intensity, and start mock tests.',
+                topics: [
+                    '<strong>Quantitative Aptitude:</strong> Profit & Loss, Simple & Compound Interest, Time & Work.',
+                    '<strong>Reasoning:</strong> Syllogism, Blood Relations, Direction Sense, basic Puzzles.',
+                    '<strong>General Awareness:</strong> Daily Current Affairs, History (Modern), Geography basics.',
+                    '<strong>English:</strong> Cloze Test, Error Spotting, Para Jumbles. Take 1 full Tier I Mock Test (analyze thoroughly).'
+                ]
+            },
+            'Week 3: Advanced Topics & Mock Analysis': {
+                description: 'Tackle more complex topics, rigorously analyze mock tests, and begin Tier II preparation.',
+                topics: [
+                    '<strong>Quantitative Aptitude:</strong> Time, Speed & Distance, Data Interpretation, Mixtures & Alligations.',
+                    '<strong>Reasoning:</strong> Advanced Puzzles, Seating Arrangement, Venn Diagrams.',
+                    '<strong>General Awareness:</strong> Daily Current Affairs, Polity, Economics basics.',
+                    '<strong>English:</strong> Idioms & Phrases, Synonyms & Antonyms. Take 2 full Tier I Mock Tests (detailed analysis).',
+                    '<strong>Tier II Prep:</strong> Practice 1 Essay, 1 Précis per day.'
+                ]
+            },
+            'Week 4: Revision & Final Polish': {
+                description: 'Intensive revision of all subjects, focus on accuracy, and final mock tests.',
+                topics: [
+                    '<strong>Revision:</strong> Quick revision of all formulas, concepts, and notes.',
+                    '<strong>Mock Tests:</strong> Take 3-4 full Tier I Mock Tests (focus on time management and accuracy).',
+                    '<strong>General Awareness:</strong> Rapid revision of 6 months Current Affairs, Static GK facts.',
+                    '<strong>English:</strong> Quick grammar review, practice remaining topic types.',
+                    '<strong>Tier II Prep:</strong> Practice 2 Essays, 2 Précis per day. Review common essay topics.',
+                    '<strong>Health & Mindset:</strong> Ensure adequate rest, stay calm and confident.'
+                ]
+            }
+        };
+
+        const tier1ChartCtx = document.getElementById('tier1Chart').getContext('2d');
+        new Chart(tier1ChartCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['General Awareness', 'Quantitative Aptitude', 'Reasoning', 'English'],
+                datasets: [{
+                    label: 'Marks',
+                    data: [20, 20, 20, 20],
+                    backgroundColor: [
+                        'rgba(79, 70, 229, 0.7)',  // Indigo
+                        'rgba(5, 150, 105, 0.7)',   // Emerald
+                        'rgba(219, 39, 119, 0.7)',  // Fuchsia
+                        'rgba(217, 119, 6, 0.7)'    // Amber
+                    ],
+                    borderColor: [
+                        'rgba(79, 70, 229, 1)',
+                        'rgba(5, 150, 105, 1)',
+                        'rgba(219, 39, 119, 1)',
+                        'rgba(217, 119, 6, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += context.parsed + ' Marks';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const tier1TabsContainer = document.getElementById('tier1-tabs');
+        const tier1ContentContainer = document.getElementById('tier1-content');
+        const subjects = Object.keys(tier1Syllabus);
+
+        subjects.forEach((subject, index) => {
+            const button = document.createElement('button');
+            button.className = 'tab-button px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-md bg-gray-200 text-gray-700';
+            button.textContent = subject;
+            button.dataset.subject = subject;
+            if (index === 0) {
+                button.classList.add('active');
+            }
+            tier1TabsContainer.appendChild(button);
+        });
+
+        function updateTier1Content(subject) {
+            tier1ContentContainer.innerHTML = '';
+            const topics = tier1Syllabus[subject];
+            const list = document.createElement('ul');
+            list.className = 'grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-gray-700';
+            topics.forEach(topic => {
+                const item = document.createElement('li');
+                item.className = 'flex items-center topic-item'; // Added topic-item class
+                item.innerHTML = `<span class="text-indigo-500 mr-2">&#10003;</span> <span>${topic}</span>`; // Wrapped topic text in a span
+                list.appendChild(item);
+            });
+            tier1ContentContainer.appendChild(list);
+        }
+
+        tier1TabsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tab-button')) {
+                tier1TabsContainer.querySelector('.active').classList.remove('active');
+                e.target.classList.add('active');
+                updateTier1Content(e.target.dataset.subject);
+            }
+        });
+
+        // Click handler for Tier I syllabus topics
+        tier1ContentContainer.addEventListener('click', (e) => {
+            const listItem = e.target.closest('.topic-item');
+            if (listItem) {
+                listItem.classList.toggle('completed');
+            }
+        });
+
+        updateTier1Content(subjects[0]);
+
+        const timelineNavContainer = document.getElementById('timeline-nav');
+        const timelineContentContainer = document.getElementById('timeline-content');
+        const phases = Object.keys(studyTimeline);
+
+        // Clear existing timeline navigation before re-rendering
+        timelineNavContainer.innerHTML = ''; 
+
+        phases.forEach((phase, index) => {
+            const item = document.createElement('div');
+            item.className = 'timeline-item cursor-pointer p-4 rounded-lg mb-2 transition-all duration-300 border-l-4 border-gray-200';
+            item.dataset.phase = phase;
+            
+            const dot = document.createElement('div');
+            dot.className = 'timeline-dot w-4 h-4 bg-gray-300 rounded-full absolute -left-[1.8rem] top-6 transition-all duration-300';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'timeline-content relative';
+            contentDiv.innerHTML = `<h4 class="font-bold text-lg">${phase}</h4>`;
+            
+            contentDiv.prepend(dot);
+            item.appendChild(contentDiv);
+
+            if (index === 0) {
+                item.classList.add('active');
+            }
+            timelineNavContainer.appendChild(item);
+        });
+
+        function updateTimelineContent(phase) {
+            const data = studyTimeline[phase];
+            timelineContentContainer.innerHTML = `
+                <h3 class="font-bold text-2xl text-indigo-700 mb-4">${phase}</h3>
+                <p class="text-gray-600 mb-6">${data.description}</p>
+                <h4 class="font-semibold text-lg mb-3">Key Focus Areas:</h4>
+                <ul class="space-y-3">
+                    ${data.topics.map(topic => `<li class="flex items-start topic-item"><span class="text-green-500 mr-3 mt-1">&#9679;</span><span>${topic}</span></li>`).join('')}
+                </ul>
+            `;
+        }
+        
+        timelineNavContainer.addEventListener('click', (e) => {
+            const targetItem = e.target.closest('.timeline-item');
+            if (targetItem) {
+                timelineNavContainer.querySelector('.active').classList.remove('active');
+                targetItem.classList.add('active');
+                updateTimelineContent(targetItem.dataset.phase);
+            }
+        });
+
+        // Click handler for Timeline topics
+        timelineContentContainer.addEventListener('click', (e) => {
+            const listItem = e.target.closest('.topic-item');
+            if (listItem) {
+                listItem.classList.toggle('completed');
+            }
+        });
+
+        updateTimelineContent(phases[0]);
+        
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('main section');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach(link => {
+                        link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
+                    });
+                }
+            });
+        }, { rootMargin: "-50% 0px -50% 0px" });
+
+        sections.forEach(section => observer.observe(section));
+
+        const mobileNav = document.getElementById('mobile-nav');
+        mobileNav.addEventListener('change', (e) => {
+            window.location.hash = e.target.value;
+        });
+
+        // Previous Year Papers functionality
+        const pdfUploadInput = document.getElementById('pdf-upload');
+        const uploadedPdfsList = document.getElementById('uploaded-pdfs-list');
+        let uploadedFiles = []; // To store file objects
+
+        pdfUploadInput.addEventListener('change', (event) => {
+            const files = event.target.files;
+            if (files.length > 0) {
+                // Clear initial message if present
+                if (uploadedPdfsList.querySelector('li.text-gray-500')) {
+                    uploadedPdfsList.innerHTML = '';
+                }
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (file.type === 'application/pdf') {
+                        uploadedFiles.push(file); // Store the file object
+                        const listItem = document.createElement('li');
+                        listItem.className = 'flex items-center justify-between bg-gray-100 p-3 rounded-md border border-gray-200';
+                        listItem.innerHTML = `
+                            <span class="text-gray-700 font-medium truncate mr-4">${file.name}</span>
+                            <button data-index="${uploadedFiles.length - 1}" class="view-pdf-button px-3 py-1 bg-indigo-500 text-white rounded-md text-sm hover:bg-indigo-600 transition-colors">View</button>
+                        `;
+                        uploadedPdfsList.appendChild(listItem);
+                    } else {
+                        // Optionally, show an error for non-PDF files
+                        const errorItem = document.createElement('li');
+                        errorItem.className = 'text-red-500 text-sm';
+                        errorItem.textContent = `Error: "${file.name}" is not a PDF file and was not uploaded.`;
+                        uploadedPdfsList.appendChild(errorItem);
+                    }
+                }
+                // Clear the input after processing files to allow re-uploading the same file
+                pdfUploadInput.value = ''; 
+            }
+        });
+
+        uploadedPdfsList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('view-pdf-button')) {
+                const index = parseInt(e.target.dataset.index);
+                if (index >= 0 && index < uploadedFiles.length) {
+                    const fileToView = uploadedFiles[index];
+                    const fileURL = URL.createObjectURL(fileToView);
+                    window.open(fileURL, '_blank');
+                }
+            }
+        });
+
+    });
+    </script>
+</body>
+</html>
