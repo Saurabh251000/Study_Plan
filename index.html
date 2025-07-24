@@ -10,19 +10,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Warm Neutrals -->
-    <!-- Application Structure Plan: A single-page dashboard design with a sticky top navigation for seamless scrolling. The structure is thematic: 1. Overview (using cards and a chart for a quick summary), 2. Tier I Deep Dive (using interactive tabs to organize the dense syllabus), 3. Tier II Strategy (using cards for clarity), 4. Previous Year Papers (for file uploads and viewing), and 5. Interactive Timeline (a visual, clickable guide for the study plan). This structure was chosen to break down the complex information into manageable, interactive sections, making it less overwhelming and more engaging for an aspirant than a linear document. The user can get a high-level view first, then drill down into specifics as needed. -->
+    <!-- Application Structure Plan: A single-page dashboard design with a sticky top navigation for seamless scrolling. The structure is thematic: 1. Overview (using cards and a chart for a quick summary), 2. Tier I Deep Dive (using interactive tabs to organize the dense syllabus), 3. Tier II Strategy (using cards for clarity), 4. Previous Year Papers & Quiz (for file uploads and a simulated quiz), and 5. Interactive Timeline (a visual, clickable guide for the study plan). This structure was chosen to break down the complex information into manageable, interactive sections, making it less overwhelming and more engaging for an aspirant than a linear document. The user can get a high-level view first, then drill down into specifics as needed. -->
     <!-- Visualization & Content Choices: 
         - Report Info: Tier I Exam Pattern (Section-wise marks) -> Goal: Inform/Compare -> Viz: Donut Chart -> Interaction: Hover for details -> Justification: Provides a quick, visual breakdown of the exam's structure, which is more intuitive than a simple list. -> Library: Chart.js (Canvas).
         - Report Info: Tier I & II Syllabus -> Goal: Organize -> Presentation: Tabbed interface for Tier I, Cards for Tier II -> Interaction: Click to switch syllabus content -> Justification: Tabs prevent a long wall of text for the dense Tier I syllabus, improving readability. Cards neatly segment the simpler Tier II structure. -> Method: HTML/CSS/JS.
         - Report Info: Study Plan -> Goal: Organize/Change -> Viz: Interactive Timeline -> Interaction: Click on a month to see the detailed plan for that period. -> Justification: Transforms a static plan into an engaging, step-by-step guide. It helps users focus on one phase at a time, making the overall plan feel more achievable. -> Method: HTML/CSS/JS.
-        - Report Info: Previous Year Papers -> Goal: Access Resources -> Presentation: File upload interface with list of uploaded files -> Interaction: Upload file, click to view file in new tab -> Justification: Provides a direct utility for users to manage their study materials within the application context. -> Method: HTML/CSS/JS.
+        - Report Info: Previous Year Papers & Quiz -> Goal: Access Resources & Practice -> Presentation: File upload interface with list of uploaded files, and a dynamic quiz interface -> Interaction: Upload file, click to view file in new tab, start quiz, select answers, submit quiz, reattempt quiz -> Justification: Provides a direct utility for users to manage their study materials and engage in simulated test practice within the application context. -> Method: HTML/CSS/JS.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
+        /* Base Styles */
         body {
             font-family: 'Inter', sans-serif;
             scroll-behavior: smooth;
         }
+
+        /* Chart Container Styling */
         .chart-container {
             position: relative;
             margin: auto;
@@ -30,6 +33,8 @@
             width: 100%;
             max-width: 300px;
         }
+
+        /* Navigation Links */
         .nav-link {
             transition: all 0.3s ease;
             border-bottom: 2px solid transparent;
@@ -38,6 +43,8 @@
             color: #4f46e5; /* indigo-600 */
             border-bottom-color: #4f46e5;
         }
+
+        /* Tab Buttons */
         .tab-button {
             transition: all 0.3s ease;
         }
@@ -45,13 +52,8 @@
             background-color: #4f46e5; /* indigo-600 */
             color: white;
         }
-        .timeline-item.active .timeline-dot {
-            background-color: #4f46e5;
-            transform: scale(1.2);
-        }
-        .timeline-item.active .timeline-content {
-             border-color: #4f46e5;
-        }
+
+        /* Topic Item (Syllabus/Timeline) */
         .topic-item {
             cursor: pointer;
             transition: all 0.2s ease;
@@ -60,6 +62,41 @@
             text-decoration: line-through;
             opacity: 0.6;
             color: #6b7280; /* gray-500 */
+        }
+
+        /* Timeline Specifics */
+        .timeline-item.active .timeline-dot {
+            background-color: #4f46e5;
+            transform: scale(1.2);
+        }
+        .timeline-item.active .timeline-content {
+             border-color: #4f46e5;
+        }
+
+        /* Quiz Options */
+        .quiz-option {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .quiz-option:hover {
+            background-color: #e0e7ff; /* indigo-100 */
+        }
+        .quiz-option.selected {
+            background-color: #c7d2fe; /* indigo-200 */
+            border-color: #4f46e5;
+        }
+        .quiz-option.correct {
+            background-color: #d1fae5; /* green-100 */
+            border-color: #10b981; /* green-500 */
+        }
+        .quiz-option.incorrect {
+            background-color: #fee2e2; /* red-100 */
+            border-color: #ef4444; /* red-500 */
+        }
+
+        /* Custom Modal */
+        #custom-modal {
+            background-color: rgba(0, 0, 0, 0.75);
         }
     </style>
 </head>
@@ -73,7 +110,7 @@
                     <a href="#overview" class="nav-link font-medium text-gray-600 pb-1">Overview</a>
                     <a href="#tier1" class="nav-link font-medium text-gray-600 pb-1">Tier I Syllabus</a>
                     <a href="#tier2" class="nav-link font-medium text-gray-600 pb-1">Tier II Strategy</a>
-                    <a href="#previous-papers" class="nav-link font-medium text-gray-600 pb-1">Previous Papers</a>
+                    <a href="#previous-papers" class="nav-link font-medium text-gray-600 pb-1">Previous Papers & Quiz</a>
                     <a href="#timeline" class="nav-link font-medium text-gray-600 pb-1">Study Timeline</a>
                 </div>
                 <div class="md:hidden">
@@ -81,7 +118,7 @@
                         <option value="#overview">Overview</option>
                         <option value="#tier1">Tier I Syllabus</option>
                         <option value="#tier2">Tier II Strategy</option>
-                        <option value="#previous-papers">Previous Papers</option>
+                        <option value="#previous-papers">Previous Papers & Quiz</option>
                         <option value="#timeline">Study Timeline</option>
                     </select>
                 </div>
@@ -174,10 +211,11 @@
 
         <section id="previous-papers" class="mb-16 scroll-mt-20">
             <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Previous Year Papers</h2>
-                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Practice is key! Use this section to upload and keep track of previous year's question papers in PDF format. You can then view them directly in a new tab for easy access.</p>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Previous Year Papers & Quiz</h2>
+                <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Practice is key! Use this section to upload and keep track of previous year's question papers in PDF format. Additionally, challenge yourself with a simulated quiz based on common exam patterns.</p>
             </div>
-            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-8">
+                <h3 class="font-bold text-xl text-indigo-700 mb-4">Upload & View Papers</h3>
                 <div class="mb-6">
                     <label for="pdf-upload" class="block text-lg font-medium text-gray-700 mb-2">Upload PDF Paper:</label>
                     <input type="file" id="pdf-upload" accept=".pdf" class="block w-full text-sm text-gray-500
@@ -189,10 +227,54 @@
                     ">
                 </div>
                 <div>
-                    <h3 class="font-semibold text-lg text-gray-800 mb-3">Uploaded Papers:</h3>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-3">Uploaded Papers:</h4>
                     <ul id="uploaded-pdfs-list" class="space-y-3">
                         <li class="text-gray-500">No papers uploaded yet.</li>
                     </ul>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+                <h3 class="font-bold text-xl text-indigo-700 mb-4">Quiz from Papers (Simulated)</h3>
+                <p class="text-gray-600 mb-4">Take a quick quiz to test your knowledge. This quiz simulates questions you might find in a previous year's paper.</p>
+                <p class="text-sm text-gray-500 mb-4">Note: Due to browser security limitations, actual text extraction from arbitrary PDFs for dynamic quiz generation is not possible client-side. This quiz is a simulation to demonstrate the concept.</p>
+                
+                <div id="quiz-main-container">
+                    <div id="quiz-setup-area">
+                        <p id="quiz-source-info" class="text-lg font-semibold text-gray-700 mb-4 hidden"></p>
+                        <div class="mb-6">
+                            <label for="quiz-duration" class="block text-base font-medium text-gray-700 mb-2">Set Quiz Duration (minutes):</label>
+                            <input type="number" id="quiz-duration" value="5" min="1" max="60" class="w-24 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                            <button id="start-quiz-button" class="ml-4 px-5 py-2 bg-indigo-600 text-white font-semibold rounded-md shadow-md hover:bg-indigo-700 transition-colors">Start Quiz</button>
+                        </div>
+                        <button id="back-to-papers-button" class="px-5 py-2 bg-gray-500 text-white font-semibold rounded-md shadow-md hover:bg-gray-600 transition-colors">Back to Papers List</button>
+                    </div>
+
+                    <div id="quiz-area" class="hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="font-medium text-gray-700">Question <span id="current-question-number">1</span> of <span id="total-questions"></span></span>
+                            <span class="font-bold text-indigo-600">Time Left: <span id="time-left"></span></span>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
+                            <p id="quiz-question" class="text-lg font-semibold text-gray-800 mb-4"></p>
+                            <div id="quiz-options" class="space-y-3">
+                                <!-- Options will be loaded here -->
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <button id="prev-question-button" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors disabled:opacity-50" disabled>Previous</button>
+                            <button id="next-question-button" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">Next</button>
+                            <button id="end-test-button" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">End Test</button> <!-- Added End Test Button -->
+                            <button id="submit-quiz-button" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors hidden">Submit Quiz</button>
+                        </div>
+                    </div>
+
+                    <div id="quiz-results" class="hidden text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Quiz Completed!</h3>
+                        <p class="text-xl text-gray-700 mb-2">Your Score: <span id="score-display" class="font-bold text-indigo-600"></span> / <span id="total-questions-results" class="font-bold text-indigo-600"></span></p>
+                        <p id="result-message" class="text-lg text-gray-600 mb-6"></p>
+                        <button id="reattempt-quiz-button" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md shadow-md hover:bg-indigo-700 transition-colors">Reattempt Quiz</button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -218,9 +300,18 @@
         </div>
     </footer>
 
+    <!-- Custom Modal for messages -->
+    <div id="custom-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-[100] hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+            <p id="modal-message" class="text-lg font-medium text-gray-800 mb-4"></p>
+            <button id="modal-close-button" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">OK</button>
+        </div>
+    </div>
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
 
+        /* --- Data Definitions --- */
         const tier1Syllabus = {
             'General Awareness': ['National & International Affairs', 'Current Affairs', 'Science & Technology', 'History', 'Geography', 'Polity', 'Economics', 'Static GK', 'Books and Authors', 'Important Days'],
             'Quantitative Aptitude': ['Number System', 'HCF & LCM', 'Percentage', 'Profit & Loss', 'Simple & Compound Interest', 'Time & Work', 'Time, Speed & Distance', 'Ratio & Proportion', 'Mixtures & Alligations', 'Data Interpretation'],
@@ -270,7 +361,93 @@
             }
         };
 
+        const sampleQuizData = [
+            {
+                question: "Which of the following is the capital of Australia?",
+                options: ["Sydney", "Melbourne", "Canberra", "Perth"],
+                correctAnswer: "Canberra"
+            },
+            {
+                question: "Who wrote 'Discovery of India'?",
+                options: ["Mahatma Gandhi", "Jawaharlal Nehru", "Sardar Patel", "Subhas Chandra Bose"],
+                correctAnswer: "Jawaharlal Nehru"
+            },
+            {
+                question: "The term 'Blue Revolution' is associated with:",
+                options: ["Agriculture", "Fisheries", "Dairy", "Poultry"],
+                correctAnswer: "Fisheries"
+            },
+            {
+                question: "Which Indian state has the longest coastline?",
+                options: ["Maharashtra", "Andhra Pradesh", "Tamil Nadu", "Gujarat"],
+                correctAnswer: "Gujarat"
+            },
+            {
+                question: "The Reserve Bank of India was established in which year?",
+                options: ["1935", "1947", "1949", "1950"],
+                correctAnswer: "1935"
+            }
+        ];
+
+        const initialPapers = [
+            { name: 'IB_ACIO_2023_Paper.pdf', data: new Blob(['This is a simulated content for IB_ACIO_2023_Paper.pdf'], { type: 'application/pdf' }) },
+            { name: 'IB_ACIO_2022_Paper.pdf', data: new Blob(['This is a simulated content for IB_ACIO_2022_Paper.pdf'], { type: 'application/pdf' }) },
+            { name: 'IB_ACIO_2021_Paper.pdf', data: new Blob(['This is a simulated content for IB_ACIO_2021_Paper.pdf'], { type: 'application/pdf' }) }
+        ];
+
+        /* --- Global Variables for Quiz --- */
+        let currentQuizQuestions = [];
+        let userAnswers = [];
+        let currentQuestionIndex = 0;
+        let timerInterval;
+        let timeLeft = 0;
+        let uploadedFiles = [...initialPapers]; // Start with pre-existing papers
+
+        /* --- DOM Element References --- */
+        // Overview Section
         const tier1ChartCtx = document.getElementById('tier1Chart').getContext('2d');
+
+        // Tier I Syllabus Section
+        const tier1TabsContainer = document.getElementById('tier1-tabs');
+        const tier1ContentContainer = document.getElementById('tier1-content');
+
+        // Previous Papers & Quiz Section
+        const pdfUploadInput = document.getElementById('pdf-upload');
+        const uploadedPdfsList = document.getElementById('uploaded-pdfs-list');
+        const quizDurationInput = document.getElementById('quiz-duration');
+        const startQuizButton = document.getElementById('start-quiz-button');
+        const quizSetupArea = document.getElementById('quiz-setup-area');
+        const quizArea = document.getElementById('quiz-area');
+        const quizResults = document.getElementById('quiz-results');
+        const currentQuestionNumberSpan = document.getElementById('current-question-number');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+        const timeLeftSpan = document.getElementById('time-left');
+        const quizQuestionElement = document.getElementById('quiz-question');
+        const quizOptionsElement = document.getElementById('quiz-options');
+        const prevQuestionButton = document.getElementById('prev-question-button');
+        const nextQuestionButton = document.getElementById('next-question-button');
+        const endTestButton = document.getElementById('end-test-button'); // New End Test button
+        const submitQuizButton = document.getElementById('submit-quiz-button');
+        const scoreDisplay = document.getElementById('score-display');
+        const totalQuestionsResults = document.getElementById('total-questions-results');
+        const resultMessage = document.getElementById('result-message');
+        const reattemptQuizButton = document.getElementById('reattempt-quiz-button');
+        const quizSourceInfo = document.getElementById('quiz-source-info');
+        const backToPapersButton = document.getElementById('back-to-papers-button');
+
+        // Study Timeline Section
+        const timelineNavContainer = document.getElementById('timeline-nav');
+        const timelineContentContainer = document.getElementById('timeline-content');
+
+        // Custom Modal
+        const customModal = document.getElementById('custom-modal');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseButton = document.getElementById('modal-close-button');
+
+
+        /* --- Initializations & Event Listeners --- */
+
+        // Initialize Chart.js for Tier I Mark Distribution
         new Chart(tier1ChartCtx, {
             type: 'doughnut',
             data: {
@@ -318,10 +495,8 @@
             }
         });
 
-        const tier1TabsContainer = document.getElementById('tier1-tabs');
-        const tier1ContentContainer = document.getElementById('tier1-content');
+        /* --- Tier I Syllabus Functions & Listeners --- */
         const subjects = Object.keys(tier1Syllabus);
-
         subjects.forEach((subject, index) => {
             const button = document.createElement('button');
             button.className = 'tab-button px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-md bg-gray-200 text-gray-700';
@@ -362,12 +537,10 @@
             }
         });
 
-        updateTier1Content(subjects[0]);
+        updateTier1Content(subjects[0]); // Load initial content for the first tab
 
-        const timelineNavContainer = document.getElementById('timeline-nav');
-        const timelineContentContainer = document.getElementById('timeline-content');
+        /* --- Study Timeline Functions & Listeners --- */
         const phases = Object.keys(studyTimeline);
-
         timelineNavContainer.innerHTML = ''; 
 
         phases.forEach((phase, index) => {
@@ -419,8 +592,9 @@
             }
         });
 
-        updateTimelineContent(phases[0]);
-        
+        updateTimelineContent(phases[0]); // Load initial content for the first timeline phase
+
+        /* --- Navigation & Scroll Spy --- */
         const navLinks = document.querySelectorAll('.nav-link');
         const sections = document.querySelectorAll('main section');
 
@@ -441,17 +615,7 @@
             window.location.hash = e.target.value;
         });
 
-        const pdfUploadInput = document.getElementById('pdf-upload');
-        const uploadedPdfsList = document.getElementById('uploaded-pdfs-list');
-        
-        // Simulate pre-existing files by creating Blob objects for them
-        const initialPapers = [
-            { name: 'IB_ACIO_2023_Paper.pdf', data: new Blob(['This is a simulated content for IB_ACIO_2023_Paper.pdf'], { type: 'application/pdf' }) },
-            { name: 'IB_ACIO_2022_Paper.pdf', data: new Blob(['This is a simulated content for IB_ACIO_2022_Paper.pdf'], { type: 'application/pdf' }) },
-            { name: 'IB_ACIO_2021_Paper.pdf', data: new Blob(['This is a simulated content for IB_ACIO_2021_Paper.pdf'], { type: 'application/pdf' }) }
-        ];
-        let uploadedFiles = [...initialPapers]; // Start with pre-existing papers
-
+        /* --- Previous Papers Upload & View Functions & Listeners --- */
         function renderUploadedPdfs() {
             uploadedPdfsList.innerHTML = ''; // Clear existing list
             if (uploadedFiles.length === 0) {
@@ -460,10 +624,13 @@
             }
             uploadedFiles.forEach((fileObj, index) => {
                 const listItem = document.createElement('li');
-                listItem.className = 'flex items-center justify-between bg-gray-100 p-3 rounded-md border border-gray-200';
+                listItem.className = 'flex flex-col sm:flex-row items-start sm:items-center justify-between bg-gray-100 p-3 rounded-md border border-gray-200';
                 listItem.innerHTML = `
-                    <span class="text-gray-700 font-medium truncate mr-4">${fileObj.name}</span>
-                    <button data-index="${index}" class="view-pdf-button px-3 py-1 bg-indigo-500 text-white rounded-md text-sm hover:bg-indigo-600 transition-colors">View</button>
+                    <span class="text-gray-700 font-medium truncate mb-2 sm:mb-0 sm:mr-4 w-full sm:w-auto">${fileObj.name}</span>
+                    <div class="flex space-x-2">
+                        <button data-index="${index}" class="view-pdf-button px-3 py-1 bg-indigo-500 text-white rounded-md text-sm hover:bg-indigo-600 transition-colors">View</button>
+                        <button data-index="${index}" data-pdf-name="${fileObj.name}" class="make-quiz-button px-3 py-1 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 transition-colors">Make Quiz</button>
+                    </div>
                 `;
                 uploadedPdfsList.appendChild(listItem);
             });
@@ -475,16 +642,13 @@
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
                     if (file.type === 'application/pdf') {
-                        uploadedFiles.push({ name: file.name, data: file }); // Store the actual File object
+                        uploadedFiles.push({ name: file.name, data: file });
                     } else {
-                        const errorItem = document.createElement('li');
-                        errorItem.className = 'text-red-500 text-sm';
-                        errorItem.textContent = `Error: "${file.name}" is not a PDF file and was not uploaded.`;
-                        uploadedPdfsList.appendChild(errorItem);
+                        showCustomModal(`Error: "${file.name}" is not a PDF file and was not uploaded.`);
                     }
                 }
                 renderUploadedPdfs(); // Re-render the list with new uploads
-                pdfUploadInput.value = ''; 
+                pdfUploadInput.value = ''; // Clear the input after processing files
             }
         });
 
@@ -492,15 +656,186 @@
             if (e.target.classList.contains('view-pdf-button')) {
                 const index = parseInt(e.target.dataset.index);
                 if (index >= 0 && index < uploadedFiles.length) {
-                    const fileToView = uploadedFiles[index].data; // Access the 'data' property
+                    const fileToView = uploadedFiles[index].data;
                     const fileURL = URL.createObjectURL(fileToView);
                     window.open(fileURL, '_blank');
                 }
+            } else if (e.target.classList.contains('make-quiz-button')) {
+                const pdfName = e.target.dataset.pdfName;
+                showCustomModal(`Simulating quiz from: ${pdfName}. Click OK to proceed to quiz setup.`);
+                
+                // Show quiz setup, hide other quiz views
+                quizSetupArea.classList.remove('hidden');
+                quizArea.classList.add('hidden');
+                quizResults.classList.add('hidden');
+                quizSourceInfo.textContent = `Quiz for: ${pdfName}`;
+                quizSourceInfo.classList.remove('hidden');
+
+                // Scroll to the quiz section
+                document.getElementById('previous-papers').scrollIntoView({ behavior: 'smooth' });
             }
         });
 
-        // Initial render of pre-existing PDFs when the page loads
-        renderUploadedPdfs();
+        renderUploadedPdfs(); // Initial render of pre-existing PDFs when the page loads
+
+        /* --- Quiz Core Functions & Listeners --- */
+        function startTimer(durationMinutes) {
+            timeLeft = durationMinutes * 60;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitQuiz(true); // Submit quiz when time runs out
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timeLeftSpan.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function loadQuestion() {
+            const questionData = currentQuizQuestions[currentQuestionIndex];
+            quizQuestionElement.textContent = questionData.question;
+            quizOptionsElement.innerHTML = '';
+            questionData.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'quiz-option p-3 border border-gray-300 rounded-md';
+                optionDiv.textContent = option;
+                optionDiv.dataset.option = option;
+                if (userAnswers[currentQuestionIndex] === option) {
+                    optionDiv.classList.add('selected');
+                }
+                quizOptionsElement.appendChild(optionDiv);
+            });
+            currentQuestionNumberSpan.textContent = currentQuestionIndex + 1;
+            updateNavigationButtons();
+        }
+
+        function updateNavigationButtons() {
+            prevQuestionButton.disabled = currentQuestionIndex === 0;
+            nextQuestionButton.classList.remove('hidden');
+            submitQuizButton.classList.add('hidden');
+            endTestButton.classList.remove('hidden'); // Ensure End Test button is visible during quiz
+
+            if (currentQuestionIndex === currentQuizQuestions.length - 1) {
+                nextQuestionButton.classList.add('hidden');
+                submitQuizButton.classList.remove('hidden');
+            }
+        }
+
+        function submitQuiz(timedOut = false) {
+            clearInterval(timerInterval);
+            let correctCount = 0;
+            currentQuizQuestions.forEach((q, index) => {
+                if (userAnswers[index] === q.correctAnswer) {
+                    correctCount++;
+                }
+            });
+
+            scoreDisplay.textContent = correctCount;
+            totalQuestionsResults.textContent = currentQuizQuestions.length;
+            
+            if (timedOut) {
+                resultMessage.textContent = "Time's up! Here are your results.";
+            } else {
+                resultMessage.textContent = `You answered ${correctCount} out of ${currentQuizQuestions.length} questions correctly.`;
+            }
+
+            quizArea.classList.add('hidden');
+            quizResults.classList.remove('hidden');
+        }
+
+        startQuizButton.addEventListener('click', () => {
+            const duration = parseInt(quizDurationInput.value);
+            if (isNaN(duration) || duration <= 0) {
+                showCustomModal('Please enter a valid quiz duration in minutes.');
+                return;
+            }
+
+            currentQuizQuestions = [...sampleQuizData]; // Use a copy of sample data
+            userAnswers = new Array(currentQuizQuestions.length).fill(null);
+            currentQuestionIndex = 0;
+
+            totalQuestionsSpan.textContent = currentQuizQuestions.length;
+            quizSetupArea.classList.add('hidden');
+            quizResults.classList.add('hidden');
+            quizArea.classList.remove('hidden');
+
+            loadQuestion();
+            startTimer(duration);
+        });
+
+        quizOptionsElement.addEventListener('click', (e) => {
+            const selectedOption = e.target.closest('.quiz-option');
+            if (selectedOption) {
+                Array.from(quizOptionsElement.children).forEach(option => {
+                    option.classList.remove('selected');
+                });
+                selectedOption.classList.add('selected');
+                userAnswers[currentQuestionIndex] = selectedOption.dataset.option;
+            }
+        });
+
+        prevQuestionButton.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        });
+
+        nextQuestionButton.addEventListener('click', () => {
+            if (currentQuestionIndex < currentQuizQuestions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            }
+        });
+
+        submitQuizButton.addEventListener('click', () => {
+            submitQuiz();
+        });
+
+        endTestButton.addEventListener('click', () => { // Event listener for End Test button
+            showCustomModal("Are you sure you want to end the test? Your current progress will be submitted.");
+            // For a real confirmation, you'd have a 'Yes/No' modal. For simplicity, 'OK' proceeds.
+            modalCloseButton.onclick = () => { // Override default OK behavior for this specific action
+                hideCustomModal();
+                submitQuiz();
+            };
+        });
+
+
+        reattemptQuizButton.addEventListener('click', () => {
+            quizResults.classList.add('hidden');
+            quizSetupArea.classList.remove('hidden');
+            quizDurationInput.value = 5; // Reset duration
+            quizSourceInfo.classList.add('hidden'); // Hide source info on reattempt setup
+        });
+
+        backToPapersButton.addEventListener('click', () => {
+            quizSetupArea.classList.add('hidden');
+            quizArea.classList.add('hidden');
+            quizResults.classList.add('hidden');
+            // Optionally, scroll back to the top of the previous papers section
+            document.getElementById('previous-papers').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        /* --- Custom Modal Logic --- */
+        function showCustomModal(message) {
+            modalMessage.textContent = message;
+            customModal.classList.remove('hidden');
+            modalCloseButton.onclick = hideCustomModal; // Reset to default close behavior
+        }
+
+        function hideCustomModal() {
+            customModal.classList.add('hidden');
+        }
+
+        modalCloseButton.addEventListener('click', hideCustomModal); // Default close listener
 
     });
     </script>
